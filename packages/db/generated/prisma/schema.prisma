@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String @unique
+}
+
+enum ModelTrainingStatus {
+  Pending
+  Generated
+  Failed
+}
+
+model Modals {
+  id              String               @id @default(uuid())
+  name            String
+  type            Gender
+  age             Int
+  ethnicity       Ethnicity
+  eyeColor        eyeColor
+  Bald            Boolean
+  zipUrl          String
+  triggerWord     String?
+  tensorPath      String?
+  status          ModelTrainingStatus?
+  falaiRequestId  String?              @unique
+  falaiResponseId String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  images          TrainingImages[]
+  outputImages    OutputImage[]
+}
+
+model TrainingImages {
+  id       String @id @default(uuid())
+  imageUrl String
+  modelId  String
+  modal    Modals @relation(fields: [modelId], references: [id])
+}
+
+enum OutputImagesStatus {
+  Pending
+  Generated
+  Failed
+}
+
+model OutputImage {
+  id              String             @id @default(uuid())
+  prompt          String
+  imageUrl        String
+  status          OutputImagesStatus @default(Pending)
+  modelId         String
+  falaiRequestId  String?            @unique
+  falaiResponseId String?
+  modal           Modals             @relation(fields: [modelId], references: [id])
+}
+
+model Packs {
+  id          String       @id @default(uuid())
+  name        String
+  packPrompts PackPrompt[]
+}
+
+model PackPrompt {
+  id     String @id @default(uuid())
+  prompt String
+  packId String
+  pack   Packs  @relation(fields: [packId], references: [id])
+}
+
+enum Gender {
+  Man
+  Women
+  Others
+}
+
+enum Ethnicity {
+  White
+  Black
+  Asian_American   @map("Asian American")
+  East_Asian       @map("East Asian")
+  South_East_Asian @map("South East Asian")
+  South_Asian      @map("South Asian")
+  Middle_Eastern   @map("Middle Eastern")
+  Pacific
+  Hispanic
+}
+
+enum eyeColor {
+  Brown
+  Blue
+  Hazel
+  Gray
+}
